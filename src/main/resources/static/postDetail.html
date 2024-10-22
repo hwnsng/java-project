@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일지 상세보기</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    .content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+<h1>일지 상세보기</h1>
+<div class="content" id="postContent"></div>
+<input type="text" id="editTitle" style="display: none;" />
+<textarea id="editContent" style="display: none;"></textarea>
+<button id="editButton" onclick="toggleEdit()">수정</button>
+<button id="deleteButton" onclick="deletePost()">삭제</button>
+<button onclick="goBack()">목록으로 돌아가기</button>
+
+<script>
+  const postContent = document.getElementById("postContent");
+  const editTitle = document.getElementById("editTitle");
+  const editContent = document.getElementById("editContent");
+  const editButton = document.getElementById("editButton");
+  const currentPostIndex = localStorage.getItem('currentPostIndex');
+  const posts = JSON.parse(localStorage.getItem('posts'));
+
+  if (currentPostIndex !== null) {
+    const post = posts[currentPostIndex];
+    postContent.innerHTML = `<h2>${post.title}</h2><p>${post.content}</p>`;
+    editTitle.value = post.title;
+    editContent.value = post.content;
+  } else {
+    postContent.innerHTML = "<p>게시글이 없습니다.</p>";
+  }
+
+  function toggleEdit() {
+    if (editTitle.style.display === "none") {
+      editTitle.style.display = "block";
+      editContent.style.display = "block";
+      editTitle.value = posts[currentPostIndex].title;
+      editContent.value = posts[currentPostIndex].content;
+      postContent.style.display = "none";
+      editButton.innerText = "저장";
+    } else {
+      const title = editTitle.value;
+      const content = editContent.value;
+      posts[currentPostIndex] = { title: title, content: content };
+      localStorage.setItem('posts', JSON.stringify(posts));
+      postContent.innerHTML = `<h2>${title}</h2><p>${content}</p>`;
+      editTitle.style.display = "none";
+      editContent.style.display = "none";
+      postContent.style.display = "block";
+      editButton.innerText = "수정";
+    }
+  }
+
+  function deletePost() {
+    if (confirm("정말 삭제하시겠습니까?")) {
+      posts.splice(currentPostIndex, 1); // Remove the post from the array
+      localStorage.setItem('posts', JSON.stringify(posts)); // Update local storage
+      alert("게시글이 삭제되었습니다.");
+      window.location.href = 'index.html'; // Redirect back to index page
+    }
+  }
+
+  function goBack() {
+    window.location.href = 'index.html'; // Redirect back to index page
+  }
+</script>
+</body>
+</html>

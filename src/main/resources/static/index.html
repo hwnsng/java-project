@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판 글 작성</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, textarea {
+            width: 99%;
+            padding: 10px;
+            margin: 5px 0px 20px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .post {
+            background: #fff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .post:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+    <script>
+        let posts = JSON.parse(localStorage.getItem('posts')) || [];
+
+        async function submitBoard() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+
+            const data = { title: title, content: content };
+
+            try {
+                const response = await fetch("http://localhost:8080/api/boards", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert("게시글이 성공적으로 등록되었습니다!");
+                    document.getElementById("title").value = "";
+                    document.getElementById("content").value = "";
+                    posts.push(data);
+                    localStorage.setItem('posts', JSON.stringify(posts)); // Save posts to local storage
+                    displayPosts();
+                } else {
+                    alert("게시글 등록에 실패했습니다.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("서버에 오류가 발생했습니다.");
+            }
+        }
+
+        function displayPosts() {
+            const postList = document.getElementById("postList");
+            postList.innerHTML = ""; // Clear the current list
+
+            posts.forEach((post, index) => {
+                const postElement = document.createElement("div");
+                postElement.className = "post";
+                postElement.innerText = post.title;
+                postElement.onclick = () => showPostDetail(index);
+                postList.appendChild(postElement);
+            });
+        }
+
+        function showPostDetail(index) {
+            const post = posts[index];
+            localStorage.setItem('currentPostIndex', index); // Save the current post index
+            window.location.href = 'postDetail.html'; // Redirect to post detail page
+        }
+
+        // Load posts on page load
+        window.onload = displayPosts;
+    </script>
+</head>
+<body>
+<h1 style="font-size: 40px;">개발 일지</h1>
+<form onsubmit="event.preventDefault(); submitBoard();">
+    <label for="title">제목</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="content">내용</label>
+    <textarea id="content" name="content" rows="5" required></textarea>
+
+    <button type="submit">글 등록</button>
+    <button type="reset">다시 쓰기</button>
+</form>
+
+<h2 style="font-size: 40px;">일지 목록</h2>
+<div id="postList"></div>
+</body>
+</html>
